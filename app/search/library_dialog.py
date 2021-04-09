@@ -4,8 +4,8 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QRunnable, QObject, Qt, pyqtSignal, pyqtSlot
 from jikanpy import APIException
 
-from search.display_dialogs import ViewManga, ViewAnime
-from search.api import JikanAPI
+from app.search.display_dialogs import ViewManga, ViewAnime
+from app.search.api import JikanAPI
 
 
 class WorkerSignals(QObject):
