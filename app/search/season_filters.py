@@ -23,6 +23,7 @@ class SeasonFilters(QGroupBox):
         layout.addWidget(QLabel('Season: '))
         layout.addSpacing(0)
         layout.addWidget(self.season)
+        layout.addStretch()
         self.setLayout(layout)
 
     def data(self):

@@ -17,6 +17,7 @@ class ResultsPageBox(QGroupBox):
         layout.addWidget(QLabel('Page: '))
         layout.addSpacing(0)
         layout.addWidget(self.page)
+        layout.addStretch()
         self.setLayout(layout)
 
     def data(self):

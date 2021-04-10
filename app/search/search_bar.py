@@ -5,7 +5,7 @@ from PyQt5.QtGui import QFont
 class SearchBar(QLineEdit):
     def __init__(self):
         super(SearchBar, self).__init__()
-        self.setFont(QFont('Calibri', 18))
+        self.setFont(QFont('Calibri', 16))
         self.setPlaceholderText('Enter title here.')
         self.setToolTip('<b>Search:</b>title<p>Enter text here to search for anime/manga by title.</p>')
         self.setFixedHeight(25)
@@ -18,7 +18,7 @@ class SearchBar(QLineEdit):
         return self.text()
 
     def is_valid_query(self):
-        return self.query().isalnum()
+        return self.query().isalnum() and len(self.query()) >= 2
 
     def is_valid_id(self):
         return self.mal_id().isnumeric()

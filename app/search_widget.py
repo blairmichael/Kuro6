@@ -1,4 +1,3 @@
-from typing import Type
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QProgressBar, QMessageBox, QLabel)
 from PyQt5.QtGui import QFont
@@ -78,21 +77,21 @@ class SearchWidget(QWidget):
         # self.timer.timeout.connect(self.update_progress)
 
         self.setFont(QFont('Calibri', 14))
-        
+
         self.search_bar = SearchBar()
         self.radio_id = RadioButton('ID', '<p><b>ID</b></p><p>Check to search by ID</p>')
-        # self.radio_id.toggled.connect(self.id_toggled)
+        self.radio_id.toggled.connect(self.id_toggled)
         self.radio_genre = RadioButton('Genre', '<p><b>Genre</b></p><p>Check to search by genre</p>')
-        # self.radio_genre.toggled.connect(self.genre_toggled)
+        self.radio_genre.toggled.connect(self.genre_toggled)
         self.radio_top = RadioButton('Top', '<p><b>Top</b></p><p>Check to search for the top anime/manga.</p>')
-        # self.radio_top.toggled.connect(self.top_toggled)
+        self.radio_top.toggled.connect(self.top_toggled)
         self.radio_season = RadioButton('Season', '<p><b>Season</b></p><p>Check to search by season</p>')
-        # self.radio_season.toggled.connect(self.season_toggled)
+        self.radio_season.toggled.connect(self.season_toggled)
         self.category_box = CategoryBox()
         # self.category_box.currentIndexChanged.connect(self.category_changed)
         self.type_box = TypeBox()
         reset_button = QPushButton('Reset Filters')
-        # reset_button.clicked.connect(self.reset_filters)
+        reset_button.clicked.connect(self.reset_filters)
 
         hbox1 = QHBoxLayout()
         hbox1.addWidget(self.search_bar)
@@ -125,7 +124,6 @@ class SearchWidget(QWidget):
         layout.addWidget(self.genre_box)
         layout.addWidget(self.season_filters)
         layout.addWidget(self.results_page_box)
-        layout.addWidget(self.results_page_box)
         layout.addWidget(self.table)
         layout.addWidget(self.progress_bar)
         layout.addWidget(self.search_button)
@@ -134,5 +132,136 @@ class SearchWidget(QWidget):
         self.season_filters.hide()
         self.results_page_box.hide()
 
+    @staticmethod
+    def error(message):
+        msg = QMessageBox()
+        msg.setWindowTitle('Invalid Search!')
+        msg.setText(message)
+        msg.setFont(QFont('Calibri', 12))
+        msg.setIcon(QMessageBox.Warning)
+        msg.exec_()
 
+    def reset_filters(self):
+        self.search_bar.title_mode()
+        self.radio_id.setChecked(False)
+        self.radio_genre.setChecked(False)
+        self.radio_top.setChecked(False)
+        self.radio_season.setChecked(False)
+        self.category_box.reset()
+        self.type_box.reset()
+        self.genre_box.show()
+        self.results_page_box.hide()
+        self.season_filters.hide()
+        self.table.setRowCount(0)
+        self.progress_bar.setValue(0)
 
+    def id_toggled(self, state):
+        if state:
+            self.radio_genre.setChecked(False)
+            self.radio_top.setChecked(False)
+            self.radio_season.setChecked(False)
+            self.genre_box.hide()
+            self.season_filters.hide()
+            self.results_page_box.hide()
+            self.search_bar.id_mode()
+        else:
+            self.search_bar.title_mode()
+            self.genre_box.show()
+
+    def genre_toggled(self, state):
+        if state:
+            self.radio_id.setChecked(False)
+            self.radio_top.setChecked(False)
+            self.radio_season.setChecked(False)
+            self.genre_box.show()
+            self.season_filters.hide()
+            self.results_page_box.show()
+            self.results_page_box.mode(1)
+            self.search_bar.disable()
+        else:
+            self.search_bar.title_mode()
+            self.results_page_box.hide()
+
+    def top_toggled(self, state):
+        if state:
+            self.radio_id.setChecked(False)
+            self.radio_genre.setChecked(False)
+            self.radio_season.setChecked(False)
+            self.genre_box.hide()
+            self.season_filters.hide()
+            self.results_page_box.show()
+            self.results_page_box.mode(0)
+            self.search_bar.disable()
+        else:
+            self.search_bar.title_mode()
+            self.genre_box.show()
+            self.results_page_box.hide()
+
+    def season_toggled(self, state):
+        if state:
+            self.radio_id.setChecked(False)
+            self.radio_genre.setChecked(False)
+            self.radio_top.setChecked(False)
+            self.genre_box.hide()
+            self.season_filters.show()
+            self.results_page_box.hide()
+            self.search_bar.disable()
+        else:
+            self.search_bar.title_mode()
+            self.genre_box.show()
+            self.season_filters.hide()
+
+    def category_changed(self):
+        self.type_box.mode(self.category_box.index(), self.radio_top.isChecked())
+
+    def check_search(self):
+        if not self.search_bar.is_valid_query():
+            self.error('Not enough characters (Min: 2)!')
+            return False
+        elif not self.category_box.is_valid():
+            self.error('Category not chosen!')
+            return False
+        elif not self.type_box.is_valid():
+            self.error('Type not chosen!')
+            return False
+        elif not self.genre_box.is_valid_text():
+            self.error('Genre(s) not chosen!')
+            return False
+        else:
+            return True
+
+    def check_id(self):
+        if not self.search_bar.is_valid_id():
+            return False
+        elif not self.category_box.is_valid():
+            self.error('Category not chosen!')
+            return False
+        else:
+            return True
+
+    def check_genre(self):
+        if not self.genre_box.is_valid_genre():
+            self.error('Must select one genre!')
+            return False
+        elif not self.category_box.is_valid():
+            self.error('Category not chosen!')
+            return False
+        else:
+            return True
+
+    def check_top(self):
+        if not self.category_box.is_valid_genre():
+            self.error('Category not chosen!')
+            return False
+        elif not self.type_box.is_valid():
+            self.error('Type not chosen!')
+            return False
+        else:
+            return True
+
+    def check_season(self):
+        if not self.season_filters.is_valid():
+            self.error('Must select a year and season!')
+            return False
+        else:
+            return True
