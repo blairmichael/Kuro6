@@ -1,3 +1,5 @@
+from sqlite3.dbapi2 import Error
+from app.database.library import Library
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QProgressBar, QMessageBox, QLabel)
 from PyQt5.QtGui import QFont
@@ -14,7 +16,11 @@ from app.search.search_bar import SearchBar
 from app.search.genre_box import GenreBox
 from app.search.season_filters import SeasonFilters
 from app.search.results_page import ResultsPageBox
-# from app.search.entry import AnimeEntry, MangaEntry
+from app.search.entry import AnimeEntry, MangaEntry
+
+
+library = Library()
+api = JikanAPI()
 
 
 class WorkerSignals(QObject):
@@ -26,7 +32,6 @@ class WorkerSignals(QObject):
 
 
 class Worker(QRunnable):
-    api = JikanAPI()
     def __init__(self, type_, *args, **kwargs):
         super(Worker, self).__init__()
         self.type = type_
@@ -38,29 +43,29 @@ class Worker(QRunnable):
     def run(self):
         try:
             if self.type == 'search':
-                results = self.api.search(*self.args, **self.kwargs)
+                results = api.search(*self.args, **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'id':
-                results = self.api.id(*self.args, **self.kwargs)
+                results = api.id(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
             elif self.type == 'genre':
-                results = self.api.genre(*self.args, **self.kwargs)
+                results = api.genre(*self.args, **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'top':
-                results = self.api.top(*self.args, **self.kwargs)
+                results = api.top(*self.args, **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'season':
-                results = self.api.season(*self.args[1:], **self.kwargs)
+                results = api.season(*self.args[1:], **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'anime':
-                results = self.api.anime(*self.args, **self.kwargs)
+                results = api.anime(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
             elif self.type == 'manga':
-                results = self.api.manga(*self.args, **self.kwargs)
+                results = api.manga(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
         except APIException as e:
             self.signals.error.emit(e.error_json['message'])
@@ -68,7 +73,29 @@ class Worker(QRunnable):
             self.signals.finished.emit()
 
 class DatabaseWorker(QRunnable):
-    pass
+    def __init__(self, type_, *args, **kwargs):
+        super(DatabaseWorker, self).__init__()
+        self.type = type_
+        self.id = args[0]
+        self.inputs = args[1:]
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    def run(self):
+        try:
+            if self.type.lower() == 'anime':
+                anime = api.anime(self.id)
+                entry = AnimeEntry(anime, self.inputs)
+                library.add_anime(entry.data())
+            else:
+                manga = api.manga(self.id)
+                entry = MangaEntry(manga, self.inputs)
+                library.add_manga(entry.data())
+        except Error as e:
+            print(e)
+            self.signals.error.emit('Error occured when adding entry to library! Try Again!')
+        finally:
+            self.signals.finished.emit()
 
 
 class SearchWidget(QWidget):
@@ -316,11 +343,27 @@ class SearchWidget(QWidget):
             dialog = AnimeDialog(self.thread_pool, *data)
             x = dialog.exec_()
             if x:
-                values = dlg.data()
-                # add to library here
+                values = dialog.data()
+                self.library_pool(data[3].lower(), *values)
         else:
             dialog = MangaDialog(self.thread_pool, *data)
             x = dialog.exec_()
             if x:
                 values = dialog.data()
-                # add to library here
+                self.library_pool(data[3].lower(), *values)
+
+    def library_pool(self, type_, *args):
+        worker = DatabaseWorker(type_, *args)
+        worker.signals.error.connect(self.error)
+        worker.signals.finished.connect(self.added)
+        self.thread_pool.start(worker)
+
+    @staticmethod
+    def added():
+        msg = QMessageBox()
+        msg.setWindowTitle('Added to library!')
+        msg.setText('Successfully added to library!')
+        msg.setFont(QFont('Calibri', 12))
+        msg.setIcon(QMessageBox.Information)
+        msg.exec_()
+

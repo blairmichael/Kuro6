@@ -35,7 +35,7 @@ class ViewAnime(QDialog):
         related_scroll = self.format_related(related)
 
         hbox = QHBoxLayout()
-        hbox.addWidget(image_label)
+        hbox.addWidget(image_label, 0, Qt.AlignTop)
         hbox.setSpacing(2)
         hbox.addWidget(info_label)
 
@@ -65,9 +65,8 @@ class ViewAnime(QDialog):
             'Score:': str(score)
         }
         text = str()
-        print(dictionary.items())
         for key, value in dictionary.items():
-            text += (f'<p><b>{key}:</b> {value}</p>')
+            text += (f'<p><b>{key} </b> {value}</p>')
         return text
 
     @staticmethod
@@ -75,7 +74,7 @@ class ViewAnime(QDialog):
         dictionary = {relation: ', '.join([item['name'] for item in related[relation]]) for relation in related}
         text = str()
         for key, value in dictionary.items():
-            text += (f'<p><b>{key}:</b> {value}</p>')
+            text += (f'<p><b>{key} </b> {value}</p>')
         label = QLabel(text)
         label.setFont(QFont('Calibri', 14))
         scroll = QScrollArea()
@@ -114,7 +113,7 @@ class ViewManga(QDialog):
         related_scroll = self.format_related(related)
 
         hbox = QHBoxLayout()
-        hbox.addWidget(image_label)
+        hbox.addWidget(image_label, 0, Qt.AlignTop)
         hbox.setSpacing(2)
         hbox.addWidget(info_label)
 
@@ -144,7 +143,7 @@ class ViewManga(QDialog):
         }
         text = str()
         for key, value in dictionary.items():
-            text += (f'<p><b>{key}:</b> {value}</p>')
+            text += (f'<p><b>{key} </b> {value}</p>')
         return text
 
     @staticmethod
@@ -152,7 +151,7 @@ class ViewManga(QDialog):
         dictionary = {relation: ', '.join([item['name'] for item in related[relation]]) for relation in related}
         text = str()
         for key, value in dictionary.items():
-            text += (f'<p><b>{key}:</b> {value}</p>')
+            text += (f'<p><b>{key} </b> {value}</p>')
         label = QLabel(text)
         label.setFont(QFont('Calibri', 14))
         scroll = QScrollArea()

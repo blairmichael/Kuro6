@@ -128,7 +128,7 @@ class AnimeDialog(Dialog):
         dialog.exec_()
 
     def data(self):
-        return self.progress.progress(), self.episodes.value(), self.rating.value()
+        return self.id, self.progress.progress(), self.episodes.value(), self.rating.value()
 
 
 class MangaDialog(Dialog):
@@ -157,4 +157,4 @@ class MangaDialog(Dialog):
         dialog.exec_()
 
     def data(self):
-        return self.progress.progress(), self.volumes.value(), self.chapters.value(), self.rating.value()
+        return self.id, self.progress.progress(), self.volumes.value(), self.chapters.value(), self.rating.value()
