@@ -13,14 +13,14 @@ class TypeBox(QComboBox):
         self.clear()
         if category:
             if top:
-                self.addItems()
+                self.addItems(['Manga', 'Novels', 'Oneshots', 'Doujin', 'Manwha', 'Manhua'])
             else:
-                self.addItems()
+                self.addItems(['Manga', 'Novel', 'Doujin', 'Manwha', 'Manhua'])
         else:
             if top:
-                self.addItems()
+                self.addItems(['Airing', 'Upcoming', 'Movie', 'OVA', 'Special'])
             else:
-                self.addItems()
+                self.addItems(['TV', 'OVA', 'Movie', 'Special', 'ONA'])
 
     def typ(self):
         return self.currentText().lower()

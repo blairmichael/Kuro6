@@ -39,19 +39,23 @@ class Worker(QRunnable):
         try:
             if self.type == 'search':
                 results = self.api.search(*self.args, **self.kwargs)
-                self.signals.result.emit(results)
+                for result in results:
+                    self.signals.result.emit(result)
             elif self.type == 'id':
                 results = self.api.id(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
             elif self.type == 'genre':
                 results = self.api.genre(*self.args, **self.kwargs)
-                self.signals.result.emit(results)
+                for result in results:
+                    self.signals.result.emit(result)
             elif self.type == 'top':
                 results = self.api.top(*self.args, **self.kwargs)
-                self.signals.result.emit(results)
+                for result in results:
+                    self.signals.result.emit(result)
             elif self.type == 'season':
-                results = self.api.season(*self.args, **self.kwargs)
-                self.signals.result.emit(results)
+                results = self.api.season(*self.args[1:], **self.kwargs)
+                for result in results:
+                    self.signals.result.emit(result)
             elif self.type == 'anime':
                 results = self.api.anime(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
@@ -88,7 +92,7 @@ class SearchWidget(QWidget):
         self.radio_season = RadioButton('Season', '<p><b>Season</b></p><p>Check to search by season</p>')
         self.radio_season.toggled.connect(self.season_toggled)
         self.category_box = CategoryBox()
-        # self.category_box.currentIndexChanged.connect(self.category_changed)
+        self.category_box.currentIndexChanged.connect(self.category_changed)
         self.type_box = TypeBox()
         reset_button = QPushButton('Reset Filters')
         reset_button.clicked.connect(self.reset_filters)
@@ -117,7 +121,7 @@ class SearchWidget(QWidget):
 
         self.progress_bar = QProgressBar()
         self.search_button = QPushButton('Search')
-        # self.search_button.clicked.connect(self.search_clicked)
+        self.search_button.clicked.connect(self.search)
 
         layout = QVBoxLayout()
         layout.addLayout(hbox1)
@@ -265,3 +269,36 @@ class SearchWidget(QWidget):
             return False
         else:
             return True
+
+    def search(self):
+        if self.radio_id.isChecked():
+            if self.check_id():
+                self.table.setRowCount(0)
+                self.pool('id', self.category_box.category(), self.search_bar.text())
+        elif self.radio_genre.isChecked():
+            if self.check_genre():
+                self.table.setRowCount(0)
+                self.pool('genre', self.category_box.category(), self.genre_box.genres(), *self.results_page_box.data())
+        elif self.radio_top.isChecked():
+            if self.check_top():
+                self.table.setRowCount(0)
+                self.pool('top', self.category_box.category(), self.type_box.typ())
+        elif self.radio_season.isChecked():
+            if self.check_season():
+                self.table.setRowCount(0)
+                self.pool('season', 'anime', *self.season_filters.data())
+        else:
+            if self.check_search():
+                self.table.setRowCount(0)
+                self.pool('search', self.category_box.category(), self.search_bar.query(), self.type_box.typ(), self.genre_box.genres())
+
+    def pool(self, search_type, category, *args):
+        worker = Worker(search_type, category, *args)
+        # worker.signals.finished.connect(self.progress_finished)
+        worker.signals.error.connect(self.error)
+        if category.lower() == 'anime':
+            worker.signals.result.connect(self.table.anime)
+        else:
+            worker.signals.result.connect(self.table.manga)
+        self.thread_pool.start(worker)
+        # self.progress_start()

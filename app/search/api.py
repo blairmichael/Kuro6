@@ -98,7 +98,7 @@ class JikanAPI:
             'thriller': 45
         }
 
-    def search(self, query, category, type_, genres):
+    def search(self, category, query, type_, genres):
         if category.lower() == 'anime':
             try:
                 responses = self.jikan.search(
@@ -132,7 +132,7 @@ class JikanAPI:
             except APIException as e:
                 raise e
 
-    def id(self, mal_id, category):
+    def id(self, category, mal_id):
         if category.lower() == 'anime':
             try:
                 response = self.jikan.anime(mal_id)
@@ -143,12 +143,12 @@ class JikanAPI:
         else:
             try:
                 response = self.jikan.manga(mal_id)
-                yield (response['image_url'], response['mal_id'], response['title'], 'manga', response['type'],
+                return (response['image_url'], response['mal_id'], response['title'], 'manga', response['type'],
                     response['volumes'], response['chapters'])
             except APIException as e:
                 raise e
-    
-    def genre(self, genre, category, results, page):
+
+    def genre(self, category, genre, results, page):
         try:
             responses = self.jikan.genre(
                 type=category.lower(),
