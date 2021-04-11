@@ -107,7 +107,8 @@ class JikanAPI:
                     parameters={
                         'limit': 10,
                         'type': type_,
-                        'genres': [self.anime_dict[genre] for genre in genres]
+                        'genres': [self.anime_dict[genre] for genre in genres],
+                        'order_by': 'members'
                     }
                 )['results']
                 for response in responses:
@@ -123,7 +124,8 @@ class JikanAPI:
                     parameters={
                         'limit': 10,
                         'type': type_,
-                        'genres': [self.manga_dict[genre] for genre in genres]
+                        'genres': [self.manga_dict[genre] for genre in genres],
+                        'order_by': 'members'
                     }
                 )['results']
                 for response in responses:
@@ -149,10 +151,11 @@ class JikanAPI:
                 raise e
 
     def genre(self, category, genre, results, page):
+        print(category, genre, results, page)
         try:
             responses = self.jikan.genre(
                 type=category.lower(),
-                genre_id=genre[0],
+                genre_id=self.anime_dict[genre[0]] if category.lower() == 'anime' else self.manga_dict[genre[0]],
                 page=page
             )[category.lower()][int(results[0])- 1:int(results[1])]
             if category.lower() == 'anime':

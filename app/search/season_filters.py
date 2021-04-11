@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QComboBox, QLabel, QSpinBox
+from PyQt5.QtWidgets import QCheckBox, QGroupBox, QHBoxLayout, QComboBox, QLabel, QSpinBox
 from PyQt5.QtGui import QFont
 from datetime import date
 
@@ -16,6 +16,8 @@ class SeasonFilters(QGroupBox):
         self.season.setPlaceholderText('Season')
         self.season.addItems(['Winter', 'Spring', 'Summer', 'Fall'])
         self.season.setToolTip('<p><b>Season</b></p><p>Choose a season to find anime from.</p>')
+        self.shuffle = QCheckBox('Shuffle')
+        self.shuffle.setToolTip('<p><b>Shuffle</b></p><p>Check to get a randomized result.</p>')
         layout = QHBoxLayout()
         layout.addWidget(QLabel('Year: '))
         layout.addSpacing(0)
@@ -23,11 +25,12 @@ class SeasonFilters(QGroupBox):
         layout.addWidget(QLabel('Season: '))
         layout.addSpacing(0)
         layout.addWidget(self.season)
+        layout.addWidget(self.shuffle)
         layout.addStretch()
         self.setLayout(layout)
 
     def data(self):
-        return self.year.value(), self.season.currentText().lower()
+        return self.year.value(), self.season.currentText().lower(), self.shuffle.isChecked()
 
     def is_valid(self):
         return self.season.currentIndex() != -1

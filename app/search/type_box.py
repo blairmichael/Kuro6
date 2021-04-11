@@ -23,7 +23,7 @@ class TypeBox(QComboBox):
                 self.addItems(['TV', 'OVA', 'Movie', 'Special', 'ONA'])
 
     def typ(self):
-        return self.currentText().lower()
+        return self.currentText().lower() if self.currentIndex() != -1 else None
 
     def is_valid(self):
         return self.currentIndex() != -1

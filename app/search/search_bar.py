@@ -12,13 +12,13 @@ class SearchBar(QLineEdit):
         self.setFrame(False)
 
     def query(self):
-        return self.text().lower().replace(' ', '%20')
+        return self.text().lower().strip().replace(' ', '%20')
 
     def mal_id(self):
         return self.text()
 
     def is_valid_query(self):
-        return self.query().isalnum() and len(self.query()) >= 2
+        return not self.query().isspace() and len(self.query()) >= 2
 
     def is_valid_id(self):
         return self.mal_id().isnumeric()

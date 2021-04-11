@@ -8,6 +8,7 @@ import requests
 class ViewAnime(QDialog):
     def __init__(self, mal_id, image_url, title, synonyms, type_, source, episodes, synopsis,
         premiered, status, duration, score, studios, genres, related):
+        super(ViewAnime, self).__init__()
         self.setWindowTitle(title)
         title_label = QLabel(title)
         title_label.setFont(QFont('Calibri', 18))
@@ -19,7 +20,7 @@ class ViewAnime(QDialog):
         image.loadFromData(requests.get(image_url).content)
         image_label = QLabel()
         image_label.setPixmap(image)
-        image_label.setFixedSize(image.sixe())
+        image_label.setFixedSize(image.size())
 
         synopsis_label = QLabel(synopsis)
         synopsis_label.setWordWrap(True)
@@ -30,10 +31,11 @@ class ViewAnime(QDialog):
 
         info_label = QLabel(self.format_info(mal_id, synonyms, type_, episodes, status, premiered,
             studios, source, duration, score, genres))
+        info_label.setFont(QFont('Calibri', 14))
         related_scroll = self.format_related(related)
 
         hbox = QHBoxLayout()
-        hbox.addWidget(image)
+        hbox.addWidget(image_label)
         hbox.setSpacing(2)
         hbox.addWidget(info_label)
 
@@ -63,17 +65,19 @@ class ViewAnime(QDialog):
             'Score:': str(score)
         }
         text = str()
-        for key, value in enumerate(dictionary.items()):
-            text += ('<p><b>{key}:</b> {value}</p>')
+        print(dictionary.items())
+        for key, value in dictionary.items():
+            text += (f'<p><b>{key}:</b> {value}</p>')
         return text
 
     @staticmethod
     def format_related(related):
         dictionary = {relation: ', '.join([item['name'] for item in related[relation]]) for relation in related}
         text = str()
-        for key, value in enumerate(dictionary.items()):
-            text += ('<p><b>{key}:</b> {value}</p>')
+        for key, value in dictionary.items():
+            text += (f'<p><b>{key}:</b> {value}</p>')
         label = QLabel(text)
+        label.setFont(QFont('Calibri', 14))
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(label)
@@ -83,6 +87,7 @@ class ViewAnime(QDialog):
 class ViewManga(QDialog):
     def __init__(self, mal_id, image_url, title, synonyms, type_, volumes, chapters, synopsis, published, status,
             score, authors, genres, related):
+        super(ViewManga, self).__init__()
         self.setWindowTitle(title)
         title_label = QLabel(title)
         title_label.setFont(QFont('Calibri', 18))
@@ -94,7 +99,7 @@ class ViewManga(QDialog):
         image.loadFromData(requests.get(image_url).content)
         image_label = QLabel()
         image_label.setPixmap(image)
-        image_label.setFixedSize(image.sixe())
+        image_label.setFixedSize(image.size())
 
         synopsis_label = QLabel(synopsis)
         synopsis_label.setWordWrap(True)
@@ -105,10 +110,11 @@ class ViewManga(QDialog):
 
         info_label = QLabel(self.format_info(mal_id, synonyms, type_, volumes, chapters, status, published,
             authors, score, genres))
+        info_label.setFont(QFont('Calibri', 14))
         related_scroll = self.format_related(related)
 
         hbox = QHBoxLayout()
-        hbox.addWidget(image)
+        hbox.addWidget(image_label)
         hbox.setSpacing(2)
         hbox.addWidget(info_label)
 
@@ -137,17 +143,18 @@ class ViewManga(QDialog):
             'Score:': str(score)
         }
         text = str()
-        for key, value in enumerate(dictionary.items()):
-            text += ('<p><b>{key}:</b> {value}</p>')
+        for key, value in dictionary.items():
+            text += (f'<p><b>{key}:</b> {value}</p>')
         return text
 
     @staticmethod
     def format_related(related):
         dictionary = {relation: ', '.join([item['name'] for item in related[relation]]) for relation in related}
         text = str()
-        for key, value in enumerate(dictionary.items()):
-            text += ('<p><b>{key}:</b> {value}</p>')
+        for key, value in dictionary.items():
+            text += (f'<p><b>{key}:</b> {value}</p>')
         label = QLabel(text)
+        label.setFont(QFont('Calibri', 14))
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(label)

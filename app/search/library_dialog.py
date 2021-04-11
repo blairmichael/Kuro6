@@ -39,6 +39,7 @@ class Worker(QRunnable):
 
 class ProgressBox(QComboBox):
     def __init__(self, anime=True):
+        super(ProgressBox, self).__init__()
         self.setFont(QFont('Calibri', 14))
         if anime:
             self.addItems(['Planning', 'Watching', 'Completed', 'Dropped'])
@@ -51,6 +52,7 @@ class ProgressBox(QComboBox):
 
 class SpinBox(QSpinBox):
     def __init__(self, range_):
+        super(SpinBox, self).__init__()
         self.setFont(QFont('Calibri', 14))
         self.setRange(0, range_)
 
@@ -86,7 +88,7 @@ class Dialog(QDialog):
         layout = QGridLayout()
         layout.addWidget(title_label, 0, 0, 1, 2)
         layout.addWidget(image, 1, 0)
-        layout.addLayout(self.input_boxes, 1, 1)
+        layout.addLayout(self.input_form, 1, 1)
         layout.addWidget(view_info, 2, 0)
         layout.addWidget(dialog_buttons, 2, 1)
 

@@ -78,7 +78,7 @@ class SearchWidget(QWidget):
         self.thread_pool = thread_pool
         self.timer = QTimer()
         self.timer.setInterval(200)
-        # self.timer.timeout.connect(self.update_progress)
+        self.timer.timeout.connect(self.progress_update)
 
         self.setFont(QFont('Calibri', 14))
 
@@ -117,7 +117,7 @@ class SearchWidget(QWidget):
         self.results_page_box = ResultsPageBox()
 
         self.table = ResultsTable()
-        # self.table.doubleClicked.connect(lambda: self.open_dialog(self.table.selectedItems()[0].data(Qt.UserRole)))
+        self.table.doubleClicked.connect(lambda: self.dialog(self.table.data()))
 
         self.progress_bar = QProgressBar()
         self.search_button = QPushButton('Search')
@@ -254,11 +254,8 @@ class SearchWidget(QWidget):
             return True
 
     def check_top(self):
-        if not self.category_box.is_valid_genre():
+        if not self.category_box.is_valid():
             self.error('Category not chosen!')
-            return False
-        elif not self.type_box.is_valid():
-            self.error('Type not chosen!')
             return False
         else:
             return True
@@ -282,7 +279,7 @@ class SearchWidget(QWidget):
         elif self.radio_top.isChecked():
             if self.check_top():
                 self.table.setRowCount(0)
-                self.pool('top', self.category_box.category(), self.type_box.typ())
+                self.pool('top', self.category_box.category(), self.type_box.typ(), *self.results_page_box.data())
         elif self.radio_season.isChecked():
             if self.check_season():
                 self.table.setRowCount(0)
@@ -294,11 +291,36 @@ class SearchWidget(QWidget):
 
     def pool(self, search_type, category, *args):
         worker = Worker(search_type, category, *args)
-        # worker.signals.finished.connect(self.progress_finished)
+        worker.signals.finished.connect(self.progress_finished)
         worker.signals.error.connect(self.error)
         if category.lower() == 'anime':
             worker.signals.result.connect(self.table.anime)
         else:
             worker.signals.result.connect(self.table.manga)
         self.thread_pool.start(worker)
-        # self.progress_start()
+        self.progress_start()
+
+    def progress_start(self):
+        self.progress_bar.setValue(0)
+        self.timer.start()
+
+    def progress_update(self):
+        self.progress_bar.setValue(self.progress_bar.value() + 2)
+
+    def progress_finished(self):
+        self.timer.stop()
+        self.progress_bar.setValue(100)
+
+    def dialog(self, data):
+        if data[3].lower() == 'anime':
+            dialog = AnimeDialog(self.thread_pool, *data)
+            x = dialog.exec_()
+            if x:
+                values = dlg.data()
+                # add to library here
+        else:
+            dialog = MangaDialog(self.thread_pool, *data)
+            x = dialog.exec_()
+            if x:
+                values = dialog.data()
+                # add to library here
