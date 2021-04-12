@@ -108,7 +108,7 @@ class AnimeDialog(Dialog):
     def __init__(self, thread_pool, mal_id, pixmap, title, category, episodes):
         super().__init__(thread_pool, mal_id, pixmap, title, category)
         self.progress = ProgressBox()
-        self.episodes = SpinBox(episodes)
+        self.episodes = SpinBox(episodes if episodes else 10000)
         self.rating = SpinBox(10)
 
         self.input_form.addRow(QLabel('Progress:'), self.progress)
@@ -134,7 +134,7 @@ class AnimeDialog(Dialog):
 class MangaDialog(Dialog):
     def __init__(self, thread_pool, mal_id, pixmap, title, category, volumes, chapters=None):
         super().__init__(thread_pool, mal_id, pixmap, title, category)
-        self.progress = ProgressBox()
+        self.progress = ProgressBox(False)
         self.volumes = SpinBox(volumes if volumes else 10000)
         self.chapters = SpinBox(chapters if chapters else 10000)
         self.rating = SpinBox(10)

@@ -19,10 +19,6 @@ from app.search.results_page import ResultsPageBox
 from app.search.entry import AnimeEntry, MangaEntry
 
 
-library = Library()
-api = JikanAPI()
-
-
 class WorkerSignals(QObject):
     finished = pyqtSignal()
     result = pyqtSignal(object)
@@ -32,8 +28,9 @@ class WorkerSignals(QObject):
 
 
 class Worker(QRunnable):
-    def __init__(self, type_, *args, **kwargs):
+    def __init__(self, api, type_, *args, **kwargs):
         super(Worker, self).__init__()
+        self.api = api
         self.type = type_
         self.args = args
         self.kwargs = kwargs
@@ -43,29 +40,29 @@ class Worker(QRunnable):
     def run(self):
         try:
             if self.type == 'search':
-                results = api.search(*self.args, **self.kwargs)
+                results = self.api.search(*self.args, **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'id':
-                results = api.id(*self.args, **self.kwargs)
+                results = self.api.id(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
             elif self.type == 'genre':
-                results = api.genre(*self.args, **self.kwargs)
+                results = self.api.genre(*self.args, **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'top':
-                results = api.top(*self.args, **self.kwargs)
+                results = self.api.top(*self.args, **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'season':
-                results = api.season(*self.args[1:], **self.kwargs)
+                results = self.api.season(*self.args[1:], **self.kwargs)
                 for result in results:
                     self.signals.result.emit(result)
             elif self.type == 'anime':
-                results = api.anime(*self.args, **self.kwargs)
+                results = self.api.anime(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
             elif self.type == 'manga':
-                results = api.manga(*self.args, **self.kwargs)
+                results = self.api.manga(*self.args, **self.kwargs)
                 self.signals.result.emit(results)
         except APIException as e:
             self.signals.error.emit(e.error_json['message'])
@@ -73,8 +70,10 @@ class Worker(QRunnable):
             self.signals.finished.emit()
 
 class DatabaseWorker(QRunnable):
-    def __init__(self, type_, *args, **kwargs):
+    def __init__(self, library, api, type_, *args, **kwargs):
         super(DatabaseWorker, self).__init__()
+        self.library = library
+        self.api = api
         self.type = type_
         self.id = args[0]
         self.inputs = args[1:]
@@ -84,13 +83,13 @@ class DatabaseWorker(QRunnable):
     def run(self):
         try:
             if self.type.lower() == 'anime':
-                anime = api.anime(self.id)
+                anime = self.api.anime(self.id)
                 entry = AnimeEntry(anime, self.inputs)
-                library.add_anime(entry.data())
+                self.library.add_anime(entry.data())
             else:
-                manga = api.manga(self.id)
+                manga = self.api.manga(self.id)
                 entry = MangaEntry(manga, self.inputs)
-                library.add_manga(entry.data())
+                self.library.add_manga(entry.data())
         except Error as e:
             print(e)
             self.signals.error.emit('Error occured when adding entry to library! Try Again!')
@@ -99,9 +98,11 @@ class DatabaseWorker(QRunnable):
 
 
 class SearchWidget(QWidget):
-    def __init__(self, thread_pool):
+    def __init__(self, thread_pool, library):
         super(SearchWidget, self).__init__()
         # create library here
+        self.library = library
+        self.api = JikanAPI()
         self.thread_pool = thread_pool
         self.timer = QTimer()
         self.timer.setInterval(200)
@@ -317,7 +318,7 @@ class SearchWidget(QWidget):
                 self.pool('search', self.category_box.category(), self.search_bar.query(), self.type_box.typ(), self.genre_box.genres())
 
     def pool(self, search_type, category, *args):
-        worker = Worker(search_type, category, *args)
+        worker = Worker(self.api,search_type, category, *args)
         worker.signals.finished.connect(self.progress_finished)
         worker.signals.error.connect(self.error)
         if category.lower() == 'anime':
@@ -353,7 +354,7 @@ class SearchWidget(QWidget):
                 self.library_pool(data[3].lower(), *values)
 
     def library_pool(self, type_, *args):
-        worker = DatabaseWorker(type_, *args)
+        worker = DatabaseWorker(self.library, self.api, type_, *args)
         worker.signals.error.connect(self.error)
         worker.signals.finished.connect(self.added)
         self.thread_pool.start(worker)
