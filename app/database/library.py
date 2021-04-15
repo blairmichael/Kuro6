@@ -91,7 +91,6 @@ class Library:
                 status TEXT,
                 volumes TEXT,
                 chapters TEXT,
-                duration TEXT,
                 synopsis TEXT,
                 published TEXT
             );
@@ -324,7 +323,7 @@ class Library:
             WHERE id = {id_}
         """
         self.cursor.execute(anime_query)
-        anime = self.cursor.fetchall()
+        anime = self.cursor.fetchone()
 
         titles_query = f"""
             SELECT anime_titles.title
@@ -376,7 +375,7 @@ class Library:
             WHERE id = {id_}
         """
         self.cursor.execute(manga_query)
-        manga = self.cursor.fetchall()
+        manga = self.cursor.fetchone()
 
         titles_query = f"""
             SELECT manga_titles.title

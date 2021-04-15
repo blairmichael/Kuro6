@@ -9,7 +9,7 @@ class Kuro(QTabWidget):
         self.thread_pool = QThreadPool()
         self.library_connection = Library()
         self.search = SearchWidget(self.thread_pool, self.library_connection)
-        self.library = LibraryTabs()
+        self.library = LibraryTabs(self.library_connection)
         self.addTab(self.search, 'Search')
         self.addTab(self.library, 'Library')
 

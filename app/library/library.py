@@ -7,13 +7,15 @@ from app.library.type_box import TypeBox
 from app.library.progress_box import ProgressBox
 from app.library.genre_box import GenreBox
 from app.library.table import TableWidget
+from app.library.display_dialogs import AnimeDialog, MangaDialog
 
 
 class Library(QWidget):
-    def __init__(self, category):
+    def __init__(self, category, connection):
         super(Library, self).__init__()
         self.setFont(QFont('Calibri', 14))
         self.default = str()
+        self.connection = connection
 
         self.database = QSqlDatabase('QSQLITE')
         self.database.setDatabaseName('library.db')
@@ -113,13 +115,13 @@ class AnimeLibrary(Library):
         'seinen': 42,
         'josei': 43
     }
-    def __init__(self, category):
-        super().__init__(category)
+    def __init__(self, category, connection):
+        super().__init__(category, connection)
         self.default = 'SELECT id, cover as Cover, title as Title, type as Type, progress as Progress, episodes_watched as Watched, rating as Rating FROM anime'
         self.query.prepare(self.default)
         self.query.exec_()
         self.model.setQuery(self.query)
-        # table clicked here
+        self.table.doubleClicked.connect(lambda: self.display(self.table.data()))
         self.table.resizeRowsToContents()
         self.table.resizeColumnsToContents()
 
@@ -160,6 +162,11 @@ class AnimeLibrary(Library):
         self.model.setQuery(self.query)
         self.table.resizeRowsToContents()
         self.table.resizeColumnsToContents()
+
+    def display(self, id):
+        data = self.connection.anime_info(id)
+        dialog = AnimeDialog(*data)
+        dialog.exec_()
 
 
 class MangaLibrary(Library):
@@ -210,13 +217,13 @@ class MangaLibrary(Library):
         'gender bender': 44,
         'thriller': 45
     }
-    def __init__(self, category):
-        super().__init__(category)
+    def __init__(self, category, connection):
+        super().__init__(category, connection)
         self.default ='SELECT id, cover as Cover, title as Title, type as Type, progress as Progress, volumes_read as Volumes, chapters_read as Chapters, rating as Rating FROM manga'
         self.query.prepare(self.default)
         self.query.exec_()
         self.model.setQuery(self.query)
-        # table clicked here
+        self.table.doubleClicked.connect(lambda: self.display(self.table.data()))
         self.table.resizeRowsToContents()
         self.table.resizeColumnsToContents()
 
@@ -258,13 +265,18 @@ class MangaLibrary(Library):
         self.table.resizeRowsToContents()
         self.table.resizeColumnsToContents()
 
+    def display(self, id):
+        data = self.connection.manga_info(id)
+        dialog = MangaDialog(*data)
+        dialog.exec_()
+
 
 class LibraryTabs(QTabWidget):
-    def __init__(self):
+    def __init__(self, connection):
         super(LibraryTabs, self).__init__()
         self.setFont(QFont('Calibri', 14))
-        self.anime = AnimeLibrary('anime')
-        self.manga = MangaLibrary('manga')
+        self.anime = AnimeLibrary('anime', connection)
+        self.manga = MangaLibrary('manga', connection)
         self.addTab(self.anime, 'Anime')
         self.addTab(self.manga, 'Manga')
 

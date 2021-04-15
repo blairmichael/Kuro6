@@ -16,4 +16,4 @@ class TableWidget(QTableView):
         self.verticalHeader().setVisible(False)
 
     def data(self):
-        return self.selectedIndexes()[0]
+        return self.selectedIndexes()[0].data()
