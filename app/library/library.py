@@ -165,7 +165,8 @@ class AnimeLibrary(Library):
 
     def display(self, id):
         data = self.connection.anime_info(id)
-        dialog = AnimeDialog(*data)
+        dialog = AnimeDialog(self.connection, *data)
+        dialog.reset.connect(lambda: self.reset_filters())
         dialog.exec_()
 
 
@@ -267,7 +268,8 @@ class MangaLibrary(Library):
 
     def display(self, id):
         data = self.connection.manga_info(id)
-        dialog = MangaDialog(*data)
+        dialog = MangaDialog(self.connection, *data)
+        dialog.reset.connect(lambda: self.reset_filters())
         dialog.exec_()
 
 

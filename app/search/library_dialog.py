@@ -54,7 +54,12 @@ class SpinBox(QSpinBox):
     def __init__(self, range_):
         super(SpinBox, self).__init__()
         self.setFont(QFont('Calibri', 14))
-        self.setRange(0, range_)
+        if range_:
+            self.setSuffix(f'/{range_}')
+            self.setRange(0, range_)
+        else:
+            self.setSuffix(f'/?')
+            self.setRange(0, 10000)
 
 
 class Dialog(QDialog):
@@ -108,7 +113,7 @@ class AnimeDialog(Dialog):
     def __init__(self, thread_pool, mal_id, pixmap, title, category, episodes):
         super().__init__(thread_pool, mal_id, pixmap, title, category)
         self.progress = ProgressBox()
-        self.episodes = SpinBox(episodes if episodes else 10000)
+        self.episodes = SpinBox(episodes)
         self.rating = SpinBox(10)
 
         self.input_form.addRow(QLabel('Progress:'), self.progress)
@@ -135,8 +140,8 @@ class MangaDialog(Dialog):
     def __init__(self, thread_pool, mal_id, pixmap, title, category, volumes, chapters=None):
         super().__init__(thread_pool, mal_id, pixmap, title, category)
         self.progress = ProgressBox(False)
-        self.volumes = SpinBox(volumes if volumes else 10000)
-        self.chapters = SpinBox(chapters if chapters else 10000)
+        self.volumes = SpinBox(volumes)
+        self.chapters = SpinBox(chapters)
         self.rating = SpinBox(10)
 
         self.input_form.addRow(QLabel('Progress:'), self.progress)

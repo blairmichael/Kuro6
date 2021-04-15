@@ -1,12 +1,17 @@
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (QDialog, QScrollArea, QVBoxLayout, QHBoxLayout, QLabel,
     QScrollArea)
 from PyQt5.QtGui import QFont, QPixmap
 
+from app.library.update_dialogs import UpdateAnime, UpdateManga
 
 class AnimeDialog(QDialog):
-    def __init__(self, anime, titles, genres, related, studios):
+    reset = pyqtSignal()
+
+    def __init__(self, connection, anime, titles, genres, related, studios):
         super(AnimeDialog, self).__init__()
         self.setFont(QFont('Calibri', 14))
+        self.connection = connection
         id_, cover, title, type_, progress, episodes_watched, rating, source, status, episodes, duration, synopsis, premiered = anime
         hbox1 = QHBoxLayout()
         hbox1.addWidget(QLabel(f'<font size=18><b>{title}</b></f>'))
@@ -65,20 +70,33 @@ class AnimeDialog(QDialog):
         synopsis_scroll.setWidget(synopsis_label)
         synopsis_scroll.setMinimumHeight(200)
 
+        update_box = UpdateAnime(self.connection, id_, progress, (episodes_watched, episodes), (rating, 10))
+
+        hbox3 = QHBoxLayout()
+        hbox3.addWidget(update_box)
+        hbox3.addWidget(synopsis_scroll)
+
         layout = QVBoxLayout()
         layout.addLayout(hbox1)
         layout.addLayout(hbox2)
         layout.addWidget(QLabel('Related:'))
         layout.addWidget(related_scroll)
-        layout.addWidget(QLabel('Synopsis:'))
-        layout.addWidget(synopsis_scroll)
+        # layout.addWidget(QLabel('Synopsis:'))
+        layout.addLayout(hbox3)
         self.setLayout(layout)
+
+    def closeEvent(self, event):
+        self.reset.emit()
+        return super().closeEvent(event)
 
 
 class MangaDialog(QDialog):
-    def __init__(self, manga, titles, genres, related, authors):
+    reset = pyqtSignal()
+
+    def __init__(self, connection, manga, titles, genres, related, authors):
         super(MangaDialog, self).__init__()
         self.setFont(QFont('Calibri', 14))
+        self.connection = connection
         id_, cover, title, type_, progress, volumes_read, chapters_read, rating, status, volumes, chapters, synopsis, published = manga
         hbox1 = QHBoxLayout()
         hbox1.addWidget(QLabel(f'<font size=18><b>{title}</b></f>'))
@@ -136,12 +154,23 @@ class MangaDialog(QDialog):
         synopsis_scroll.setWidget(synopsis_label)
         synopsis_scroll.setMinimumHeight(200)
 
+        update_box = UpdateManga(self.connection, id_, progress, (volumes_read, volumes), (chapters_read, chapters), (rating, 10))
+
+        hbox3 = QHBoxLayout()
+        hbox3.addWidget(update_box)
+        hbox3.addWidget(synopsis_scroll)
+
         layout = QVBoxLayout()
         layout.addLayout(hbox1)
         layout.addLayout(hbox2)
         layout.addWidget(QLabel('Related:'))
         layout.addWidget(related_scroll)
         layout.addWidget(QLabel('Synopsis:'))
-        layout.addWidget(synopsis_scroll)
+        layout.addLayout(hbox3)
         self.setLayout(layout)
+
+    def closeEvent(self, event):
+        self.reset.emit()
+        return super().closeEvent(event)
+
 

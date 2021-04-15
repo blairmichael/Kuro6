@@ -288,8 +288,8 @@ class Library:
         query = """
             UPDATE manga
             SET progress = ?,
-                volumes_watched = ?,
-                chapters_watched = ?,
+                volumes_read = ?,
+                chapters_read = ?,
                 rating = ?
             WHERE id = ?
         """
