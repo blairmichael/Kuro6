@@ -94,6 +94,18 @@ class Recommendations:
             self.cursor.execute(q)
         self.connection.commit()
 
+    def clear_database(self):
+        anime = """
+            DELETE FROM anime
+        """
+        manga = """
+            DELETE FROM manga
+        """
+        self.cursor.execute(anime)
+        self.cursor.execute(manga)
+        self.connection.commit()
+
+
     def add_anime(self, data):
         anime = """
             REPLACE INTO anime(id, cover, title, type, score, synopsis)

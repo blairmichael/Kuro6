@@ -82,6 +82,7 @@ class RecommendationsWidget(QWidget):
         self.anime_scores = self.get_scores(self.library_connection.get_anime_genres())
         self.manga_scores = self.get_scores(self.library_connection.get_manga_genres())
         if reset:
+            self.recommendations_connection.clear_database()
             self.populate()
         self.set_ranks(self.recommendations_connection.get_anime(), self.recommendations_connection.update_anime_rank, self.anime_scores)
         self.set_ranks(self.recommendations_connection.get_manga(), self.recommendations_connection.update_manga_rank, self.manga_scores)

@@ -105,10 +105,9 @@ class JikanAPI:
                     category.lower(),
                     query,
                     parameters={
-                        'limit': 10,
+                        'limit': 15,
                         'type': type_,
                         'genres': [self.anime_dict[genre] for genre in genres],
-                        'order_by': 'members'
                     }
                 )['results']
                 for response in responses:
@@ -122,10 +121,9 @@ class JikanAPI:
                     category.lower(),
                     query,
                     parameters={
-                        'limit': 10,
+                        'limit': 15,
                         'type': type_,
                         'genres': [self.manga_dict[genre] for genre in genres],
-                        'order_by': 'members'
                     }
                 )['results']
                 for response in responses:
